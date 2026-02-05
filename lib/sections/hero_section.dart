@@ -220,20 +220,23 @@ class _HeroSectionState extends State<HeroSection>
         const SizedBox(height: 32),
 
         // Main Name
-        GradientText(
-          text: "AMIT MATTH",
-          gradient: AppTheme.primaryGradient,
-          style: GoogleFonts.orbitron(
-            fontSize: isSmallScreen ? 48 : 82,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 4,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: GradientText(
+            text: "AMIT MATTH",
+            gradient: AppTheme.primaryGradient,
+            style: GoogleFonts.orbitron(
+              fontSize: isSmallScreen ? 48 : 82,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 4,
+            ),
           ),
         ),
         const SizedBox(height: 16),
 
         // Animated Tagline
         SizedBox(
-          height: 48,
+          height: isSmallScreen ? 80 : 48,
           child: DefaultTextStyle(
             style: GoogleFonts.rajdhani(
               fontSize: isSmallScreen ? 24 : 32,
@@ -241,6 +244,7 @@ class _HeroSectionState extends State<HeroSection>
               color: AppTheme.foreground.withOpacity(0.9),
               letterSpacing: 1.5,
             ),
+            maxLines: 2,
             child: AnimatedTextKit(
               repeatForever: true,
               animatedTexts: [

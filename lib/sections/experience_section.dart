@@ -311,7 +311,9 @@ class _ExperienceSectionState extends State<ExperienceSection>
         builder: (context, child) {
           return Container(
             padding: const EdgeInsets.all(32),
-            width: isSmallScreen ? 340 : 540,
+            width: isSmallScreen
+                ? math.min(340, MediaQuery.of(context).size.width - 60)
+                : 540,
             decoration: BoxDecoration(
               color: AppTheme.card.withOpacity(0.8),
               borderRadius: BorderRadius.circular(24),
@@ -402,25 +404,42 @@ class _ExperienceSectionState extends State<ExperienceSection>
                 _buildExperiencePoint(
                     'Enabled .ORA Export for professional workflows.'),
                 const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildActionButton(
-                        'Project Summary',
-                        Icons.description_outlined,
-                        'https://gist.github.com/your-gist-link',
+                isSmallScreen
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildActionButton(
+                            'Project Summary',
+                            Icons.description_outlined,
+                            'https://gist.github.com/your-gist-link',
+                          ),
+                          const SizedBox(height: 12),
+                          _buildActionButton(
+                            'View PRs',
+                            Icons.code,
+                            'https://github.com/Catrobat/Paintroid-Flutter/pulls?q=is%3Apr+author%3Ayourusername',
+                          ),
+                        ],
+                      )
+                    : Row(
+                        children: [
+                          Expanded(
+                            child: _buildActionButton(
+                              'Project Summary',
+                              Icons.description_outlined,
+                              'https://gist.github.com/your-gist-link',
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildActionButton(
+                              'View PRs',
+                              Icons.code,
+                              'https://github.com/Catrobat/Paintroid-Flutter/pulls?q=is%3Apr+author%3Ayourusername',
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildActionButton(
-                        'View PRs',
-                        Icons.code,
-                        'https://github.com/Catrobat/Paintroid-Flutter/pulls?q=is%3Apr+author%3Ayourusername',
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
           ],

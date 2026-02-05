@@ -557,26 +557,20 @@ class _3DRoadmapPainter extends CustomPainter {
     if (nodeCenters.isEmpty) return;
 
     final double timelineX = isSmallScreen ? 20 : size.width / 2;
-    final paint = Paint()
-      ..color = AppTheme.primary.withOpacity(0.15)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
 
-    final glowPaint = Paint()
-      ..strokeWidth = 4
-      ..style = PaintingStyle.stroke;
+    // 1. Construct the ONE continuous path
+    final fullPath = Path();
+    fullPath.moveTo(timelineX, nodeCenters[0]);
 
     for (int i = 0; i < nodeCenters.length - 1; i++) {
       final startY = nodeCenters[i];
       final endY = nodeCenters[i + 1];
 
-      final path = Path()..moveTo(timelineX, startY);
-
       if (isSmallScreen) {
-        path.lineTo(timelineX, endY);
+        fullPath.lineTo(timelineX, endY);
       } else {
         final controlX = i % 2 == 0 ? timelineX + 100 : timelineX - 100;
-        path.cubicTo(
+        fullPath.cubicTo(
           timelineX,
           startY + (endY - startY) / 3,
           controlX,
@@ -585,32 +579,66 @@ class _3DRoadmapPainter extends CustomPainter {
           endY,
         );
       }
+    }
 
-      // Base path
-      canvas.drawPath(path, paint);
+    // 2. Draw Background Path
+    final bgPaint = Paint()
+      ..color = AppTheme.primary.withOpacity(0.15)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+    canvas.drawPath(fullPath, bgPaint);
 
-      // Animated "Energy Stream"
-      final pathMetrics = path.computeMetrics();
-      for (var metric in pathMetrics) {
-        final length = metric.length;
-        final start = (animation.value * length) % length;
-        final end = (start + 100) % length;
+    // 3. Draw Animated "Slug" with continuous flow
+    final metrics = fullPath.computeMetrics().toList();
+    if (metrics.isEmpty) return;
 
-        if (start < end) {
-          canvas.drawPath(
-            metric.extractPath(start, end),
-            glowPaint
-              ..shader = LinearGradient(
-                colors: [
-                  Colors.transparent,
-                  AppTheme.primary.withOpacity(0.6),
-                  Colors.transparent
-                ],
-              ).createShader(
-                  Rect.fromLTWH(0, startY, size.width, endY - startY)),
-          );
-        }
-      }
+    final metric = metrics.first;
+    final totalLength = metric.length;
+    // Length of the flowing energy beam
+    final slugLength = isSmallScreen ? 150.0 : 250.0;
+
+    // Calculate position
+    final startDist = animation.value * totalLength;
+    final endDist = startDist + slugLength;
+
+    final glowPaint = Paint()
+      ..strokeWidth = isSmallScreen ? 6 : 4
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    // Helper to draw a segment with gradient
+    void drawSegment(double start, double end) {
+      final subPath = metric.extractPath(start, end);
+      final bounds = subPath.getBounds();
+
+      // If bounds are empty or too small (e.g. at start), fallback to a reasonable default
+      if (bounds.isEmpty) return;
+      // On mobile vertical line, width might be 0. Avoid crash/invisible gradient.
+      final shaderRect = bounds.width == 0 || bounds.height == 0
+          ? Rect.fromLTWH(timelineX - 20, bounds.top, 40, bounds.height)
+          : bounds;
+
+      glowPaint.shader = LinearGradient(
+        colors: [
+          Colors.transparent,
+          AppTheme.primary.withOpacity(0.9), // Bright head
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.5, 1.0],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(
+          shaderRect.inflate(10)); // Inflate ensuring gradient coverage
+
+      canvas.drawPath(subPath, glowPaint);
+    }
+
+    // Main segment
+    drawSegment(startDist, math.min(endDist, totalLength));
+
+    // Wrap-around segment (Visual continuity: when head leaves bottom, it appears at top)
+    if (endDist > totalLength) {
+      drawSegment(0, endDist - totalLength);
     }
   }
 

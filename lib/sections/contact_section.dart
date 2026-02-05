@@ -81,6 +81,7 @@ class _ContactSectionState extends State<ContactSection>
 
     return Container(
       width: double.infinity,
+      alignment: Alignment.center,
       padding: EdgeInsets.symmetric(
         vertical: isSmallScreen ? 60 : 120,
         horizontal: 24,
@@ -99,16 +100,14 @@ class _ContactSectionState extends State<ContactSection>
           _isHovering = false;
           _mousePos = Offset.zero;
         }),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1200),
-            child: Column(
-              children: [
-                _buildHeader(isSmallScreen),
-                const SizedBox(height: 80),
-                _buildMainContent(context, isSmallScreen),
-              ],
-            ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: Column(
+            children: [
+              _buildHeader(isSmallScreen),
+              const SizedBox(height: 80),
+              _buildMainContent(context, isSmallScreen),
+            ],
           ),
         ),
       ),
